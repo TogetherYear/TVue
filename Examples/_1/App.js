@@ -1,0 +1,22 @@
+import { H } from '../../lib/TVue.esm.js'
+
+export const App = {
+    Render() {
+        window.self = this
+        // return H("p", { a: 'a' }, `Say:`)
+        // return H("p", { a: 'a' }, `Say:${this.msg}`)
+        return H("p", { a: 'a' }, [
+            H('div', { class: 'AAA' }, 'AAAAAAA'),
+            H('div', { class: 'BBB' }, 'AAAAAAA'),
+            H('div', { class: 'CCC' }, [
+                H('div', { class: 'AAA' }, 'AAAAAAA'),
+                H('div', { class: 'BBB' }, 'AAAAAAA'),
+            ]),
+        ])
+    },
+    Setup: () => {
+        return {
+            msg: 'TVue'
+        }
+    }
+}
