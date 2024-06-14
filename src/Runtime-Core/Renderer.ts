@@ -44,8 +44,8 @@ const ProcessComponent = (vNode: IVNode, container: HTMLElement) => {
     MountComponent(vNode, container)
 }
 
-const MountComponent = (vNode: IVNode, container: HTMLElement) => {
-    const instance = CreateComponentInstance(vNode)
+const MountComponent = (initinalVNode: IVNode, container: HTMLElement) => {
+    const instance = CreateComponentInstance(initinalVNode)
     SetupComponent(instance)
     SetupRenderEffect(instance, container)
 }
