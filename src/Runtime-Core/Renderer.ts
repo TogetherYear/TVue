@@ -1,4 +1,3 @@
-import { IsObject } from "../Shared/index";
 import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
 import { IVNode } from "./VNode";
@@ -31,8 +30,16 @@ const MountElement = (vNode: IVNode, container: HTMLElement) => {
         MountChildren(vNode, el)
     }
     for (let key in props) {
-        //@ts-ignore
-        el.setAttribute(key, props[key])
+        const val = props[key]
+        if (key.startsWith('On') && typeof val === 'function') {
+            const event = key.slice(2).toLowerCase()
+            //@ts-ignore
+            el.addEventListener(event, val)
+        }
+        else {
+            //@ts-ignore
+            el.setAttribute(key, val)
+        }
     }
     container.append(el)
 }
