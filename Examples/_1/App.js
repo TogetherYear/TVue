@@ -10,7 +10,7 @@ export const App = {
             H('div', { class: 'BBB' }, 'AAAAAAA'),
             H('div', { class: 'CCC' }, [
                 H('div', { class: 'AAA' }, 'AAAAAAA'),
-                H('div', { class: 'BBB' }, 'AAAAAAA'),
+                H('div', { class: 'BBB' }, `Say:${this.msg}`),
             ]),
         ])
     },

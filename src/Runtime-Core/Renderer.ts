@@ -1,4 +1,5 @@
 import { IsObject } from "../Shared/index";
+import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
 import { IVNode } from "./VNode";
 
@@ -7,10 +8,11 @@ export const Render = (vNode: IVNode, container: HTMLElement) => {
 }
 
 const Patch = (vNode: IVNode, container: HTMLElement) => {
-    if (typeof vNode.component === 'string') {
+    const { shapeFlag } = vNode
+    if (shapeFlag & ShapeFlag.Element) {
         ProcessElement(vNode, container)
     }
-    else if (IsObject(vNode.component)) {
+    else if (shapeFlag & ShapeFlag.StateFulComponent) {
         ProcessComponent(vNode, container)
     }
 }
@@ -21,15 +23,16 @@ const ProcessElement = (vNode: IVNode, container: HTMLElement) => {
 
 const MountElement = (vNode: IVNode, container: HTMLElement) => {
     const el = (vNode.el = document.createElement(vNode.component as string))
-    if (typeof vNode.children === 'string') {
-        el.textContent = vNode.children
+    const { shapeFlag, children, props } = vNode
+    if (shapeFlag & ShapeFlag.TextChildren) {
+        el.textContent = children as string
     }
-    else if (Array.isArray(vNode.children)) {
+    else if (shapeFlag & ShapeFlag.ArrayChildren) {
         MountChildren(vNode, el)
     }
-    for (let key in vNode.props) {
+    for (let key in props) {
         //@ts-ignore
-        el.setAttribute(key, vNode.props[key])
+        el.setAttribute(key, props[key])
     }
     container.append(el)
 }
