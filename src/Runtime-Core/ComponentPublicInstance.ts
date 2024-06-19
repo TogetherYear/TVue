@@ -1,4 +1,5 @@
 import { TObject } from "../Reactivity/Reactive"
+import { HasKey } from "../Shared/index"
 import { IComponentInstance } from "./Component"
 
 interface IComponentPublicInstance {
@@ -13,8 +14,12 @@ export const ComponentPublicInstance = {
     get: (target: IComponentPublicInstance, p: string, receiver: any) => {
         const instance = target._ as IComponentInstance
         const { setupState } = instance
-        if (p in setupState) {
+        const { props } = instance.vNode
+        if (HasKey(setupState, p)) {
             return setupState[p]
+        }
+        else if (HasKey(props, p)) {
+            return props[p]
         }
         else if (p in publicPropertiesMap) {
             return publicPropertiesMap[p](instance)

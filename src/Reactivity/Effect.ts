@@ -7,7 +7,6 @@ type EOptions<T> = {
     onStop?: T
 }
 
-
 export class ReactiveEffect {
     constructor(fn: EFn, options?: EOptions<EFn>) {
         this.fn = fn

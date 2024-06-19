@@ -1,4 +1,5 @@
-import { TObject } from "../Reactivity/Reactive";
+import { ShallowReadonly, TObject } from "../Reactivity/Reactive";
+import { InitProps } from "./ComponentProps";
 import { ComponentPublicInstance } from "./ComponentPublicInstance";
 import { IVNode } from "./VNode";
 
@@ -22,12 +23,13 @@ export const CreateComponentInstance = (vNode: IVNode): IComponentInstance => {
 }
 
 export const SetupComponent = (instance: IComponentInstance) => {
+    InitProps(instance)
     SetupStatefulComponent(instance)
 }
 
 export const SetupStatefulComponent = (instance: IComponentInstance) => {
     const component = instance.vNode.component as IComponent
-    const setupResult = component.Setup ? component.Setup() : {}
+    const setupResult = component.Setup ? component.Setup(ShallowReadonly(instance.vNode.props)) : {}
     HandleSetupResult(instance, setupResult)
 }
 
