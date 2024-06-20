@@ -11,7 +11,12 @@ export const App = {
             },
         }, [
             H('div', { class: 'AAA' }, `ASay:${this.msg}`),
-            H(Foo, { count: 100000 }),
+            H(Foo, {
+                count: 100000,
+                OnAdd: (...args) => {
+                    console.log(args)
+                }
+            }),
             H('div', {
                 class: 'CCC'
             }, [

@@ -1,4 +1,5 @@
 import { ShallowReadonly, TObject } from "../Reactivity/Reactive";
+import { InitEmit } from "./ComponentEmit";
 import { InitProps } from "./ComponentProps";
 import { ComponentPublicInstance } from "./ComponentPublicInstance";
 import { IVNode } from "./VNode";
@@ -13,6 +14,7 @@ export interface IComponentInstance {
     setupState: TObject,
     proxy: ProxyConstructor
     Render: (...args: Array<unknown>) => IVNode,
+    Emit: (event: string, ...args: Array<unknown>) => unknown
 }
 
 export const CreateComponentInstance = (vNode: IVNode): IComponentInstance => {
@@ -24,12 +26,17 @@ export const CreateComponentInstance = (vNode: IVNode): IComponentInstance => {
 
 export const SetupComponent = (instance: IComponentInstance) => {
     InitProps(instance)
+    InitEmit(instance)
     SetupStatefulComponent(instance)
 }
 
 export const SetupStatefulComponent = (instance: IComponentInstance) => {
     const component = instance.vNode.component as IComponent
-    const setupResult = component.Setup ? component.Setup(ShallowReadonly(instance.vNode.props)) : {}
+    const setupResult = component.Setup
+        ? component.Setup(ShallowReadonly(instance.vNode.props), {
+            Emit: instance.Emit
+        })
+        : {}
     HandleSetupResult(instance, setupResult)
 }
 
