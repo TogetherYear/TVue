@@ -1,25 +1,13 @@
-import { H } from '../../lib/TVue.esm.js'
+import { H, RenderSlots } from '../../lib/TVue.esm.js'
 
 export const Foo = {
     Render() {
-        return H("div", {}, [
-            H("div", {}, `Foo:${this.msg}:${this.count}`),
-            H('button', {
-                OnClick: (e) => {
-                    e.stopPropagation()
-                    this.Add()
-                }
-            }, "Click Me!")
-        ])
+        const foo = H('p', {}, 'foo')
+        return H('div', {}, [foo, RenderSlots(this.$slots, 'header', 10), RenderSlots(this.$slots, 'footer')])
     },
     Setup: (props, { Emit }) => {
-        const Add = () => {
-            console.log("Add")
-            Emit("Add", 1, 2)
-        }
         return {
             msg: 'TTTTTVueTTTTT',
-            Add,
         }
     }
 }

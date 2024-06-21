@@ -23,7 +23,7 @@ const ProcessElement = (vNode: IVNode, container: HTMLElement) => {
 const MountElement = (vNode: IVNode, container: HTMLElement) => {
     const el = (vNode.el = document.createElement(vNode.component as string))
     const { shapeFlag, children, props } = vNode
-    if (shapeFlag & ShapeFlag.TextChildren) {
+    if (shapeFlag & ShapeFlag.TextChildren && children) {
         el.textContent = children as string
     }
     else if (shapeFlag & ShapeFlag.ArrayChildren) {

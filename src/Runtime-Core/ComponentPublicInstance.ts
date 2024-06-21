@@ -7,7 +7,8 @@ interface IComponentPublicInstance {
 }
 
 const publicPropertiesMap: TObject = {
-    $el: (instance: IComponentInstance) => instance.vNode.el
+    $el: (instance: IComponentInstance) => instance.vNode.el,
+    $slots: (instance: IComponentInstance) => instance.slots
 }
 
 export const ComponentPublicInstance = {

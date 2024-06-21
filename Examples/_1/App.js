@@ -3,27 +3,12 @@ import { Foo } from './Foo.js'
 
 export const App = {
     Render() {
-        window.self = this
-        return H("p", {
-            a: 'a',
-            OnClick: (e) => {
-                console.log("Click:", e)
-            },
-        }, [
-            H('div', { class: 'AAA' }, `ASay:${this.msg}`),
-            H(Foo, {
-                count: 100000,
-                OnAdd: (...args) => {
-                    console.log(args)
-                }
-            }),
-            H('div', {
-                class: 'CCC'
-            }, [
-                H('div', { class: 'AAA' }, 'AAAAAAA'),
-                H('div', { class: 'BBB' }, `BSay:${this.msg}`),
-            ]),
-        ])
+        const app = H('div', {}, 'app')
+        const foo = H(Foo, {}, {
+            header: (a) => [H('div', {}, '123' + a), H('div', {}, '456')],
+            footer: () => [H('div', {}, '789'), H('div', {}, '000')],
+        })
+        return H('div', {}, [app, foo])
     },
     Setup: () => {
         return {

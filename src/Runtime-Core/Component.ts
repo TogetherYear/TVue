@@ -2,7 +2,8 @@ import { ShallowReadonly, TObject } from "../Reactivity/Reactive";
 import { InitEmit } from "./ComponentEmit";
 import { InitProps } from "./ComponentProps";
 import { ComponentPublicInstance } from "./ComponentPublicInstance";
-import { IVNode } from "./VNode";
+import { InitSlots } from "./ComponentSlots";
+import { Children, IVNode } from "./VNode";
 
 export interface IComponent {
     Render: (...args: Array<unknown>) => IVNode,
@@ -12,6 +13,7 @@ export interface IComponent {
 export interface IComponentInstance {
     vNode: IVNode,
     setupState: TObject,
+    slots?: Children,
     proxy: ProxyConstructor
     Render: (...args: Array<unknown>) => IVNode,
     Emit: (event: string, ...args: Array<unknown>) => unknown
@@ -27,6 +29,7 @@ export const CreateComponentInstance = (vNode: IVNode): IComponentInstance => {
 export const SetupComponent = (instance: IComponentInstance) => {
     InitProps(instance)
     InitEmit(instance)
+    InitSlots(instance)
     SetupStatefulComponent(instance)
 }
 
