@@ -14,14 +14,18 @@ export interface IComponentInstance {
     vNode: IVNode,
     setupState: TObject,
     slots?: Children,
-    proxy: ProxyConstructor
+    proxy: ProxyConstructor,
+    provides: TObject,
+    parent?: IComponentInstance,
     Render: (...args: Array<unknown>) => IVNode,
     Emit: (event: string, ...args: Array<unknown>) => unknown
 }
 
-export const CreateComponentInstance = (vNode: IVNode): IComponentInstance => {
+export const CreateComponentInstance = (vNode: IVNode, parent?: IComponentInstance): IComponentInstance => {
     const instance = {
         vNode,
+        parent,
+        provides: parent ? parent.provides : {}
     }
     return instance as IComponentInstance
 }
