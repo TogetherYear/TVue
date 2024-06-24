@@ -3,11 +3,12 @@ import { GetCurrentInstance, IComponentInstance } from "./Component"
 export const Provide = <T>(key: string, value: T) => {
     const instance = GetCurrentInstance()
     if (instance) {
+        let { provides } = instance
         const parentProvide = instance.parent?.provides
-        if (instance.provides === parentProvide) {
-            instance.provides = Object.create(parentProvide)
+        if (provides === parentProvide) {
+            provides = instance.provides = Object.create(parentProvide)
         }
-        instance.provides[key] = value
+        provides[key] = value
     }
 }
 
