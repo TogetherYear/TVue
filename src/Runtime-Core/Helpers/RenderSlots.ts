@@ -1,4 +1,4 @@
-import { Children, CreateVNode, IVNode } from "../VNode"
+import { Children, CreateVNode, IVNode, SpecialTag } from "../VNode"
 
 export const RenderSlots = (slots: Children, name?: string, ...args: Array<unknown>) => {
     if (Array.isArray(slots) || typeof slots === 'string') {
@@ -7,7 +7,7 @@ export const RenderSlots = (slots: Children, name?: string, ...args: Array<unkno
     else {
         const target = slots[name || '']
         if (target) {
-            return CreateVNode('div', {}, target(...args))
+            return CreateVNode(SpecialTag.Fragment, {}, target(...args))
         }
     }
 }

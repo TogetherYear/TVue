@@ -1,19 +1,43 @@
 import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
-import { IVNode } from "./VNode";
+import { IVNode, SpecialTag } from "./VNode";
 
 export const Render = (vNode: IVNode, container: HTMLElement) => {
     Patch(vNode, container)
 }
 
 const Patch = (vNode: IVNode, container: HTMLElement) => {
-    const { shapeFlag } = vNode
-    if (shapeFlag & ShapeFlag.Element) {
-        ProcessElement(vNode, container)
+    const { component, shapeFlag } = vNode
+
+    switch (component) {
+        case SpecialTag.Fragment:
+            ProcessFragment(vNode, container)
+            break;
+        case SpecialTag.Text:
+            ProcessText(vNode, container)
+            break;
+        default:
+            if (shapeFlag & ShapeFlag.Element) {
+                ProcessElement(vNode, container)
+            }
+            else if (shapeFlag & ShapeFlag.StateFulComponent) {
+                ProcessComponent(vNode, container)
+            }
+            else {
+                console.log("Special:", vNode)
+            }
+            break;
     }
-    else if (shapeFlag & ShapeFlag.StateFulComponent) {
-        ProcessComponent(vNode, container)
-    }
+}
+
+const ProcessFragment = (vNode: IVNode, container: HTMLElement) => {
+    MountChildren(vNode, container)
+}
+
+const ProcessText = (vNode: IVNode, container: HTMLElement) => {
+    const { children } = vNode
+    const textNode = (vNode.el = document.createTextNode(children as string))
+    container.append(textNode)
 }
 
 const ProcessElement = (vNode: IVNode, container: HTMLElement) => {

@@ -1,9 +1,14 @@
 import { ShapeFlag } from "../Shared/ShapeFlag"
 import { IComponent } from "./Component"
 
+export enum SpecialTag {
+    Text = 'Text',
+    Fragment = 'Fragment',
+}
+
 export interface IVNode {
     component: IComponent | string,
-    el: HTMLElement,
+    el: HTMLElement | Text,
     props: Record<string, unknown>,
     shapeFlag: ShapeFlag,
     children?: Children
@@ -32,6 +37,10 @@ export const CreateVNode = (component: IComponent | string, props: Record<string
         vNode.shapeFlag |= ShapeFlag.ArrayChildren
     }
     return vNode as IVNode
+}
+
+export const CreateTextVNode = (text: string) => {
+    return CreateVNode(SpecialTag.Text, {}, text)
 }
 
 const GetShapeFlag = (type: unknown) => {
