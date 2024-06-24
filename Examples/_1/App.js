@@ -1,7 +1,8 @@
-import { H, CreateTextVNode } from '../../lib/TVue.esm.js'
+import { H, CreateTextVNode, GetCurrentInstance } from '../../lib/TVue.esm.js'
 import { Foo } from './Foo.js'
 
 export const App = {
+    name: "App",
     Render() {
         const app = H('div', {}, 'app')
         const foo = H(Foo, {}, {
@@ -11,6 +12,7 @@ export const App = {
         return H('div', {}, [app, foo])
     },
     Setup: () => {
+        console.log(GetCurrentInstance())
         return {
             msg: 'TVue'
         }

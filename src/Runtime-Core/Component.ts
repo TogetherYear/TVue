@@ -35,11 +35,13 @@ export const SetupComponent = (instance: IComponentInstance) => {
 
 export const SetupStatefulComponent = (instance: IComponentInstance) => {
     const component = instance.vNode.component as IComponent
+    SetCurrentInstance(instance)
     const setupResult = component.Setup
         ? component.Setup(ShallowReadonly(instance.vNode.props), {
             Emit: instance.Emit
         })
         : {}
+    SetCurrentInstance(null)
     HandleSetupResult(instance, setupResult)
 }
 
@@ -60,4 +62,14 @@ const HandleSeutpProxy = (instance: IComponentInstance) => {
 const FinishComponentSetup = (instance: IComponentInstance) => {
     const component = instance.vNode.component as IComponent
     instance.Render = component.Render
+}
+
+let currentInstance: IComponentInstance | null = null
+
+export const GetCurrentInstance = () => {
+    return currentInstance
+}
+
+const SetCurrentInstance = (instance: IComponentInstance | null) => {
+    currentInstance = instance
 }
