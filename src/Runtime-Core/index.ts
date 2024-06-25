@@ -1,6 +1,6 @@
-export { CreateApp } from './CreateApp'
 export { H } from './H'
 export { RenderSlots } from './Helpers/RenderSlots'
 export { CreateTextVNode } from './VNode'
 export { GetCurrentInstance } from './Component'
 export { Provide, Inject } from './ApiInject'
+export { CreateRenderer } from './Renderer'

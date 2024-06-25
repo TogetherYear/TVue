@@ -1,13 +1,14 @@
-import { IComponent } from "./Component"
-import { Render } from "./Renderer"
-import { CreateVNode } from "./VNode"
+import { IComponent, IComponentInstance } from "./Component"
+import { CreateRenderer } from "./Renderer"
+import { CreateVNode, IVNode } from "./VNode"
 
-export const CreateApp = (rootComponent: IComponent) => {
-    return {
-        Mount: (rootContainer: string) => {
-            const container = document.querySelector(rootContainer) as HTMLElement
-            const vNode = CreateVNode(rootComponent)
-            Render(vNode, container)
+export const CreateAppApi = (Render: (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => void) => {
+    return (rootComponent: IComponent) => {
+        return {
+            Mount: (rootContainer: HTMLElement) => {
+                const vNode = CreateVNode(rootComponent)
+                Render(vNode, rootContainer)
+            }
         }
     }
 }
