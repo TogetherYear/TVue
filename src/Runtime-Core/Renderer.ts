@@ -10,11 +10,17 @@ export interface IRendererDom {
     HostInsert: (el: HTMLElement | Text, container: HTMLElement) => void
 }
 
+export interface IHostElement {
+    [key: string]: unknown
+}
+
+export type RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => void
+
 export const CreateRenderer = (options: IRendererDom) => {
 
     const { HostCreateElement, HostCreateTextNode, HostPatchProp, HostInsert } = options
 
-    const Render = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const Render: RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         Patch(vNode, container, parentComponent)
     }
 
