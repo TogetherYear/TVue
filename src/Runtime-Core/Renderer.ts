@@ -10,10 +10,6 @@ export interface IRendererDom {
     HostInsert: (el: HTMLElement | Text, container: HTMLElement) => void
 }
 
-export interface IHostElement {
-    [key: string]: unknown
-}
-
 export type RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => void
 
 export const CreateRenderer = (options: IRendererDom) => {
