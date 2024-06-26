@@ -7,7 +7,7 @@ import { IVNode, SpecialTag } from "./VNode";
 export interface IRendererDom {
     HostCreateElement: (type: string) => HTMLElement
     HostCreateTextNode: (text: string) => Text
-    HostPatchProp: (el: HTMLElement, key: string, value: unknown) => void
+    HostPatchProp: (el: HTMLElement, key: string, prevValue: unknown, value: unknown) => void
     HostInsert: (el: HTMLElement | Text, container: HTMLElement) => void
 }
 
@@ -75,14 +75,34 @@ export const CreateRenderer = (options: IRendererDom) => {
         }
         for (let key in props) {
             const val = props[key]
-            HostPatchProp(el, key, val)
+            HostPatchProp(el, key, null, val)
         }
 
         HostInsert(el, container)
     }
 
     const PatchElement = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement) => {
-        console.log(prevVNode, vNode)
+        const el = vNode.el = prevVNode.el
+        PatchProps(el as HTMLElement, prevVNode.props, vNode.props)
+    }
+
+    const PatchProps = (el: HTMLElement, prevProps: Record<string, unknown>, props: Record<string, unknown>) => {
+        if (prevProps !== props) {
+            for (let key in props) {
+                const prevProp = prevProps[key]
+                const prop = props[key]
+                if (prevProp !== prop) {
+                    HostPatchProp(el, key, prevProp, prop)
+                }
+            }
+            if (Object.keys(prevProps).length != 0) {
+                for (let key in prevProps) {
+                    if (!(key in props)) {
+                        HostPatchProp(el, key, prevProps[key], null)
+                    }
+                }
+            }
+        }
     }
 
     const MountChildren = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {

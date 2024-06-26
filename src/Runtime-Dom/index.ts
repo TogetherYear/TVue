@@ -10,7 +10,7 @@ const HostCreateTextNode = (text: string) => {
     return document.createTextNode(text)
 }
 
-const HostPatchProp = (el: HTMLElement, key: string, value: unknown) => {
+const HostPatchProp = (el: HTMLElement, key: string, prevValue: unknown, value: unknown) => {
     console.log("PatchProp")
     if (key.startsWith('On') && typeof value === 'function') {
         const event = key.slice(2).toLowerCase()
@@ -18,8 +18,13 @@ const HostPatchProp = (el: HTMLElement, key: string, value: unknown) => {
         el.addEventListener(event, value)
     }
     else {
-        //@ts-ignore
-        el.setAttribute(key, value)
+        if (value === undefined || value === null) {
+            el.removeAttribute(key)
+        }
+        else {
+            //@ts-ignore
+            el.setAttribute(key, value)
+        }
     }
 }
 
