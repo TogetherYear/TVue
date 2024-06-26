@@ -1,3 +1,4 @@
+import { Effect } from "../Reactivity/Effect";
 import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
 import { CreateAppApi } from "./CreateApp";
@@ -17,25 +18,25 @@ export const CreateRenderer = (options: IRendererDom) => {
     const { HostCreateElement, HostCreateTextNode, HostPatchProp, HostInsert } = options
 
     const Render: RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        Patch(vNode, container, parentComponent)
+        Patch(null, vNode, container, parentComponent)
     }
 
-    const Patch = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const Patch = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         const { component, shapeFlag } = vNode
 
         switch (component) {
             case SpecialTag.Fragment:
-                ProcessFragment(vNode, container, parentComponent)
+                ProcessFragment(prevVNode, vNode, container, parentComponent)
                 break;
             case SpecialTag.Text:
-                ProcessText(vNode, container)
+                ProcessText(prevVNode, vNode, container)
                 break;
             default:
                 if (shapeFlag & ShapeFlag.Element) {
-                    ProcessElement(vNode, container, parentComponent)
+                    ProcessElement(prevVNode, vNode, container, parentComponent)
                 }
                 else if (shapeFlag & ShapeFlag.StateFulComponent) {
-                    ProcessComponent(vNode, container, parentComponent)
+                    ProcessComponent(prevVNode, vNode, container, parentComponent)
                 }
                 else {
                     console.log("Special:", vNode)
@@ -44,18 +45,23 @@ export const CreateRenderer = (options: IRendererDom) => {
         }
     }
 
-    const ProcessFragment = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const ProcessFragment = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         MountChildren(vNode, container, parentComponent)
     }
 
-    const ProcessText = (vNode: IVNode, container: HTMLElement) => {
+    const ProcessText = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement) => {
         const { children } = vNode
         const textNode = (vNode.el = HostCreateTextNode(children as string))
         HostInsert(textNode, container)
     }
 
-    const ProcessElement = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        MountElement(vNode, container, parentComponent)
+    const ProcessElement = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+        if (!prevVNode) {
+            MountElement(vNode, container, parentComponent)
+        }
+        else {
+            PatchElement(prevVNode, vNode, container)
+        }
     }
 
     const MountElement = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
@@ -75,13 +81,17 @@ export const CreateRenderer = (options: IRendererDom) => {
         HostInsert(el, container)
     }
 
+    const PatchElement = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement) => {
+        console.log(prevVNode, vNode)
+    }
+
     const MountChildren = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         (vNode.children as Array<IVNode>).forEach(v => {
-            Patch(v, container, parentComponent)
+            Patch(null, v, container, parentComponent)
         })
     }
 
-    const ProcessComponent = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const ProcessComponent = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         MountComponent(vNode, container, parentComponent)
     }
 
@@ -92,10 +102,22 @@ export const CreateRenderer = (options: IRendererDom) => {
     }
 
     const SetupRenderEffect = (instance: IComponentInstance, container: HTMLElement) => {
-        const { proxy } = instance
-        const subTree = instance.Render.call(proxy)
-        Patch(subTree, container, instance)
-        instance.vNode.el = subTree.el
+        Effect(() => {
+            if (!instance.isMounted) {
+                const { proxy } = instance
+                const subTree = instance.subTree = instance.Render.call(proxy)
+                Patch(null, subTree, container, instance)
+                instance.vNode.el = subTree.el
+                instance.isMounted = true
+            }
+            else {
+                const { proxy } = instance
+                const subTree = instance.Render.call(proxy)
+                const prevSubTree = instance.subTree
+                instance.subTree = subTree
+                Patch(prevSubTree, subTree, container, instance)
+            }
+        })
     }
 
     return {

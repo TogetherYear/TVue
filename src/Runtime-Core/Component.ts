@@ -1,4 +1,5 @@
 import { ShallowReadonly, TObject } from "../Reactivity/Reactive";
+import { ProxyRefs } from "../Reactivity/Ref";
 import { InitEmit } from "./ComponentEmit";
 import { InitProps } from "./ComponentProps";
 import { ComponentPublicInstance } from "./ComponentPublicInstance";
@@ -15,8 +16,10 @@ export interface IComponentInstance {
     setupState: TObject,
     slots?: Children,
     proxy: ProxyConstructor,
+    isMounted: boolean,
     provides: TObject,
     parent?: IComponentInstance,
+    subTree: IVNode
     Render: (...args: Array<unknown>) => IVNode,
     Emit: (event: string, ...args: Array<unknown>) => unknown
 }
@@ -25,6 +28,7 @@ export const CreateComponentInstance = (vNode: IVNode, parent?: IComponentInstan
     const instance = {
         vNode,
         parent,
+        isMounted: false,
         provides: parent ? parent.provides : {}
     }
     return instance as IComponentInstance
@@ -50,7 +54,7 @@ export const SetupStatefulComponent = (instance: IComponentInstance) => {
 }
 
 const HandleSetupResult = (instance: IComponentInstance, setupResult: TObject) => {
-    instance.setupState = setupResult
+    instance.setupState = ProxyRefs(setupResult)
     HandleSeutpProxy(instance)
     FinishComponentSetup(instance)
 }
