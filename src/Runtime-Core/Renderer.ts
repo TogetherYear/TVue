@@ -2,20 +2,22 @@ import { Effect } from "../Reactivity/Effect";
 import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
 import { CreateAppApi } from "./CreateApp";
-import { IVNode, SpecialTag } from "./VNode";
+import { Children, IVNode, SpecialTag } from "./VNode";
 
 export interface IRendererDom {
     HostCreateElement: (type: string) => HTMLElement
     HostCreateTextNode: (text: string) => Text
     HostPatchProp: (el: HTMLElement, key: string, prevValue: unknown, value: unknown) => void
     HostInsert: (el: HTMLElement | Text, container: HTMLElement) => void
+    HostRemove: (el: HTMLElement | Text) => void
+    HostSetElementText: (el: HTMLElement, text: string) => void
 }
 
 export type RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => void
 
 export const CreateRenderer = (options: IRendererDom) => {
 
-    const { HostCreateElement, HostCreateTextNode, HostPatchProp, HostInsert } = options
+    const { HostCreateElement, HostCreateTextNode, HostPatchProp, HostInsert, HostRemove, HostSetElementText } = options
 
     const Render: RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         Patch(null, vNode, container, parentComponent)
@@ -46,7 +48,7 @@ export const CreateRenderer = (options: IRendererDom) => {
     }
 
     const ProcessFragment = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        MountChildren(vNode, container, parentComponent)
+        MountChildren(vNode.children as Array<IVNode>, container, parentComponent)
     }
 
     const ProcessText = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement) => {
@@ -60,7 +62,7 @@ export const CreateRenderer = (options: IRendererDom) => {
             MountElement(vNode, container, parentComponent)
         }
         else {
-            PatchElement(prevVNode, vNode, container)
+            PatchElement(prevVNode, vNode, container, parentComponent)
         }
     }
 
@@ -71,7 +73,7 @@ export const CreateRenderer = (options: IRendererDom) => {
             el.textContent = children as string
         }
         else if (shapeFlag & ShapeFlag.ArrayChildren) {
-            MountChildren(vNode, el, parentComponent)
+            MountChildren(vNode.children as Array<IVNode>, el, parentComponent)
         }
         for (let key in props) {
             const val = props[key]
@@ -81,12 +83,13 @@ export const CreateRenderer = (options: IRendererDom) => {
         HostInsert(el, container)
     }
 
-    const PatchElement = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement) => {
+    const PatchElement = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
         const el = vNode.el = prevVNode.el
-        PatchProps(el as HTMLElement, prevVNode.props, vNode.props)
+        PatchChildren(el as HTMLElement, prevVNode, vNode, parentComponent)
+        PatchProps(el as HTMLElement, prevVNode.props, vNode.props, parentComponent)
     }
 
-    const PatchProps = (el: HTMLElement, prevProps: Record<string, unknown>, props: Record<string, unknown>) => {
+    const PatchProps = (el: HTMLElement, prevProps: Record<string, unknown>, props: Record<string, unknown>, parentComponent?: IComponentInstance) => {
         if (prevProps !== props) {
             for (let key in props) {
                 const prevProp = prevProps[key]
@@ -105,8 +108,37 @@ export const CreateRenderer = (options: IRendererDom) => {
         }
     }
 
-    const MountChildren = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        (vNode.children as Array<IVNode>).forEach(v => {
+    const PatchChildren = (el: HTMLElement, prevVNode: IVNode, vNode: IVNode, parentComponent?: IComponentInstance) => {
+        const { shapeFlag: prevFlag } = prevVNode
+        const { shapeFlag: flag } = vNode
+        if (flag & ShapeFlag.TextChildren) {
+            if (prevFlag & ShapeFlag.ArrayChildren) {
+                UnmountChildren(prevVNode.children as Array<IVNode>)
+                HostSetElementText(el, vNode.children as string)
+            }
+            else if (prevFlag & ShapeFlag.TextChildren) {
+                if (prevVNode.children !== vNode.children) {
+                    HostSetElementText(el, vNode.children as string)
+                }
+            }
+        }
+        else if (flag & ShapeFlag.ArrayChildren) {
+            if (prevFlag & ShapeFlag.TextChildren) {
+                HostSetElementText(el, "")
+                MountChildren(vNode.children as Array<IVNode>, el, parentComponent)
+            }
+            else if (prevFlag & ShapeFlag.ArrayChildren) {
+
+            }
+        }
+    }
+
+    const UnmountChildren = (children: Array<IVNode>) => {
+        children.forEach(c => HostRemove(c.el))
+    }
+
+    const MountChildren = (children: Array<IVNode>, container: HTMLElement, parentComponent?: IComponentInstance) => {
+        children.forEach(v => {
             Patch(null, v, container, parentComponent)
         })
     }
