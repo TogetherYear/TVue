@@ -8,37 +8,37 @@ export interface IRendererDom {
     HostCreateElement: (type: string) => HTMLElement
     HostCreateTextNode: (text: string) => Text
     HostPatchProp: (el: HTMLElement, key: string, prevValue: unknown, value: unknown) => void
-    HostInsert: (el: HTMLElement | Text, container: HTMLElement) => void
+    HostInsert: (el: HTMLElement | Text, container: HTMLElement, anchor?: HTMLElement | Text) => void
     HostRemove: (el: HTMLElement | Text) => void
     HostSetElementText: (el: HTMLElement, text: string) => void
 }
 
-export type RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => void
+export type RenderFN = (vNode: IVNode, container: HTMLElement) => void
 
 export const CreateRenderer = (options: IRendererDom) => {
 
     const { HostCreateElement, HostCreateTextNode, HostPatchProp, HostInsert, HostRemove, HostSetElementText } = options
 
-    const Render: RenderFN = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        Patch(null, vNode, container, parentComponent)
+    const Render: RenderFN = (vNode: IVNode, container: HTMLElement) => {
+        Patch(null, vNode, container)
     }
 
-    const Patch = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const Patch = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         const { component, shapeFlag } = vNode
 
         switch (component) {
             case SpecialTag.Fragment:
-                ProcessFragment(prevVNode, vNode, container, parentComponent)
+                ProcessFragment(prevVNode, vNode, container, parentComponent, anchor)
                 break;
             case SpecialTag.Text:
-                ProcessText(prevVNode, vNode, container)
+                ProcessText(prevVNode, vNode, container, anchor)
                 break;
             default:
                 if (shapeFlag & ShapeFlag.Element) {
-                    ProcessElement(prevVNode, vNode, container, parentComponent)
+                    ProcessElement(prevVNode, vNode, container, parentComponent, anchor)
                 }
                 else if (shapeFlag & ShapeFlag.StateFulComponent) {
-                    ProcessComponent(prevVNode, vNode, container, parentComponent)
+                    ProcessComponent(prevVNode, vNode, container, parentComponent, anchor)
                 }
                 else {
                     console.log("Special:", vNode)
@@ -47,45 +47,45 @@ export const CreateRenderer = (options: IRendererDom) => {
         }
     }
 
-    const ProcessFragment = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        MountChildren(vNode.children as Array<IVNode>, container, parentComponent)
+    const ProcessFragment = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
+        MountChildren(vNode.children as Array<IVNode>, container, parentComponent, anchor)
     }
 
-    const ProcessText = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement) => {
+    const ProcessText = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, anchor?: HTMLElement | Text) => {
         const { children } = vNode
         const textNode = (vNode.el = HostCreateTextNode(children as string))
-        HostInsert(textNode, container)
+        HostInsert(textNode, container, anchor)
     }
 
-    const ProcessElement = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const ProcessElement = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         if (!prevVNode) {
-            MountElement(vNode, container, parentComponent)
+            MountElement(vNode, container, parentComponent, anchor)
         }
         else {
-            PatchElement(prevVNode, vNode, container, parentComponent)
+            PatchElement(prevVNode, vNode, container, parentComponent, anchor)
         }
     }
 
-    const MountElement = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const MountElement = (vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         const el = (vNode.el = HostCreateElement(vNode.component as string))
         const { shapeFlag, children, props } = vNode
         if (shapeFlag & ShapeFlag.TextChildren && children) {
             el.textContent = children as string
         }
         else if (shapeFlag & ShapeFlag.ArrayChildren) {
-            MountChildren(vNode.children as Array<IVNode>, el, parentComponent)
+            MountChildren(vNode.children as Array<IVNode>, el, parentComponent, anchor)
         }
         for (let key in props) {
             const val = props[key]
             HostPatchProp(el, key, null, val)
         }
 
-        HostInsert(el, container)
+        HostInsert(el, container, anchor)
     }
 
-    const PatchElement = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const PatchElement = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         const el = vNode.el = prevVNode.el
-        PatchChildren(el as HTMLElement, prevVNode, vNode, parentComponent)
+        PatchChildren(el as HTMLElement, prevVNode, vNode, container, parentComponent, anchor)
         PatchProps(el as HTMLElement, prevVNode.props, vNode.props, parentComponent)
     }
 
@@ -108,7 +108,7 @@ export const CreateRenderer = (options: IRendererDom) => {
         }
     }
 
-    const PatchChildren = (el: HTMLElement, prevVNode: IVNode, vNode: IVNode, parentComponent?: IComponentInstance) => {
+    const PatchChildren = (el: HTMLElement, prevVNode: IVNode, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         const { shapeFlag: prevFlag } = prevVNode
         const { shapeFlag: flag } = vNode
         if (flag & ShapeFlag.TextChildren) {
@@ -125,10 +125,10 @@ export const CreateRenderer = (options: IRendererDom) => {
         else if (flag & ShapeFlag.ArrayChildren) {
             if (prevFlag & ShapeFlag.TextChildren) {
                 HostSetElementText(el, "")
-                MountChildren(vNode.children as Array<IVNode>, el, parentComponent)
+                MountChildren(vNode.children as Array<IVNode>, el, parentComponent, anchor)
             }
             else if (prevFlag & ShapeFlag.ArrayChildren) {
-
+                PatchKeyedChildren(prevVNode.children as Array<IVNode>, vNode.children as Array<IVNode>, el, parentComponent, anchor)
             }
         }
     }
@@ -137,28 +137,85 @@ export const CreateRenderer = (options: IRendererDom) => {
         children.forEach(c => HostRemove(c.el))
     }
 
-    const MountChildren = (children: Array<IVNode>, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const PatchKeyedChildren = (prevChildren: Array<IVNode>, children: Array<IVNode>, container: HTMLElement, parentComponent?: IComponentInstance, parentAnchor?: HTMLElement | Text) => {
+        let i = 0;
+        const l1 = prevChildren.length
+        const l2 = children.length
+        let e1 = l1 - 1;
+        let e2 = l2 - 1;
+        // 左侧
+        while (i <= e1 && i <= e2) {
+            const prevVNode = prevChildren[i]
+            const vNode = children[i]
+            if (IsSomeVNode(prevVNode, vNode)) {
+                Patch(prevVNode, vNode, container, parentComponent, parentAnchor)
+            }
+            else {
+                break
+            }
+            i++
+        }
+        // 右侧
+        while (i <= e1 && i <= e2) {
+            const prevVNode = prevChildren[e1]
+            const vNode = children[e2]
+            if (IsSomeVNode(prevVNode, vNode)) {
+                Patch(prevVNode, vNode, container, parentComponent, parentAnchor)
+            }
+            else {
+                break
+            }
+            e1--
+            e2--
+        }
+
+        if (i > e1) {
+            if (i <= e2) {
+                const nextPos = e2 + 1
+                const anchor = nextPos < l2 ? children[nextPos].el : undefined
+                while (i <= e2) {
+                    Patch(null, children[i], container, parentComponent, anchor)
+                    i++
+                }
+            }
+        }
+        else if (i > e2) {
+            if (i <= e1) {
+                HostRemove(prevChildren[i].el)
+                i++
+            }
+        }
+        else {
+
+        }
+    }
+
+    const IsSomeVNode = (prevVNode: IVNode, vNode: IVNode) => {
+        return prevVNode.component === vNode.component && prevVNode.key === vNode.key
+    }
+
+    const MountChildren = (children: Array<IVNode>, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         children.forEach(v => {
-            Patch(null, v, container, parentComponent)
+            Patch(null, v, container, parentComponent, anchor)
         })
     }
 
-    const ProcessComponent = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
-        MountComponent(vNode, container, parentComponent)
+    const ProcessComponent = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
+        MountComponent(vNode, container, parentComponent, anchor)
     }
 
-    const MountComponent = (initinalVNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance) => {
+    const MountComponent = (initinalVNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
         const instance = CreateComponentInstance(initinalVNode, parentComponent)
         SetupComponent(instance)
-        SetupRenderEffect(instance, container)
+        SetupRenderEffect(instance, container, anchor)
     }
 
-    const SetupRenderEffect = (instance: IComponentInstance, container: HTMLElement) => {
+    const SetupRenderEffect = (instance: IComponentInstance, container: HTMLElement, anchor?: HTMLElement | Text) => {
         Effect(() => {
             if (!instance.isMounted) {
                 const { proxy } = instance
                 const subTree = instance.subTree = instance.Render.call(proxy)
-                Patch(null, subTree, container, instance)
+                Patch(null, subTree, container, instance, anchor)
                 instance.vNode.el = subTree.el
                 instance.isMounted = true
             }
@@ -167,7 +224,7 @@ export const CreateRenderer = (options: IRendererDom) => {
                 const subTree = instance.Render.call(proxy)
                 const prevSubTree = instance.subTree
                 instance.subTree = subTree
-                Patch(prevSubTree, subTree, container, instance)
+                Patch(prevSubTree, subTree, container, instance, anchor)
             }
         })
     }

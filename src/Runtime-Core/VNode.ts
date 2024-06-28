@@ -11,6 +11,7 @@ export interface IVNode {
     el: HTMLElement | Text,
     props: Record<string, unknown>,
     shapeFlag: ShapeFlag,
+    key: string,
     children?: Children
 }
 
@@ -25,6 +26,7 @@ export const CreateVNode = (component: IComponent | string, props: Record<string
         component,
         props,
         children,
+        key: props.key,
         shapeFlag: GetShapeFlag(component)
     }
     if (typeof children === 'string') {

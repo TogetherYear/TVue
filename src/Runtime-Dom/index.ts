@@ -26,8 +26,8 @@ const HostPatchProp = (el: HTMLElement, key: string, prevValue: unknown, value: 
     }
 }
 
-const HostInsert = (el: HTMLElement | Text, container: HTMLElement) => {
-    container.append(el)
+const HostInsert = (el: HTMLElement | Text, container: HTMLElement, anchor?: HTMLElement | Text) => {
+    container.insertBefore(el, anchor || null)
 }
 
 const HostRemove = (el: HTMLElement | Text) => {
