@@ -102,17 +102,21 @@ import { H, Reactive, Ref } from '../../lib/TVue.esm.js'
 const prevChildren = [
     H("p", { key: "A" }, "A"),
     H("p", { key: "B" }, "B"),
-    H("p", { key: "C", id: "c-prev" }, "C"),
-    H("p", { key: "E" }, "E"),
+    H("p", { key: "C" }, "C"),
     H("p", { key: "D" }, "D"),
+    H("p", { key: "E" }, "E"),
+    H("p", { key: "Z" }, "Z"),
     H("p", { key: "F" }, "F"),
     H("p", { key: "G" }, "G"),
 ];
+
 const nextChildren = [
     H("p", { key: "A" }, "A"),
     H("p", { key: "B" }, "B"),
+    H("p", { key: "D" }, "D"),
+    H("p", { key: "C" }, "C"),
+    H("p", { key: "Y" }, "Y"),
     H("p", { key: "E" }, "E"),
-    H("p", { key: "C", id: "c-next" }, "C"),
     H("p", { key: "F" }, "F"),
     H("p", { key: "G" }, "G"),
 ];

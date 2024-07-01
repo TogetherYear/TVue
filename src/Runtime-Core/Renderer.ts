@@ -1,4 +1,5 @@
 import { Effect } from "../Reactivity/Effect";
+import { GetSequence } from "../Shared/index";
 import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
 import { CreateAppApi } from "./CreateApp";
@@ -194,6 +195,11 @@ export const CreateRenderer = (options: IRendererDom) => {
             const toBePatched = e2 - s2 + 1;
             let patched = 0
 
+            const newIndexToOldIndexMap = new Array(toBePatched).fill(0)
+
+            let moved = false
+            let maxNewIndexSoFar = 0
+
             for (let i = s2; i <= e2; ++i) {
                 const nextChild = children[i]
                 keyToNewIndexMap.set(nextChild.key, i)
@@ -220,12 +226,40 @@ export const CreateRenderer = (options: IRendererDom) => {
                         HostRemove(preChild.el)
                     }
                     else {
+                        if (newIndex >= maxNewIndexSoFar) {
+                            maxNewIndexSoFar = newIndex
+                        }
+                        else {
+                            moved = true
+                        }
+                        newIndexToOldIndexMap[newIndex - s2] = i + 1
                         Patch(preChild, children[newIndex], container, parentComponent, undefined)
                         patched++
                     }
                 }
                 else {
                     HostRemove(preChild.el)
+                }
+            }
+
+            const increasingNewIndexSequence = moved ? GetSequence(newIndexToOldIndexMap) : []
+            let j = increasingNewIndexSequence.length - 1
+
+            for (let i = toBePatched - 1; i >= 0; --i) {
+                const nextIndex = i + s2;
+                const nextChild = children[nextIndex]
+                const anchor = nextIndex + 1 < l2 ? children[nextIndex + 1].el : undefined
+
+                if (newIndexToOldIndexMap[i] === 0) {
+                    Patch(null, nextChild, container, parentComponent, anchor)
+                }
+                else if (moved) {
+                    if (j < 0 || i !== increasingNewIndexSequence[j]) {
+                        HostInsert(nextChild.el, container, anchor)
+                    }
+                    else {
+                        j--
+                    }
                 }
             }
         }
