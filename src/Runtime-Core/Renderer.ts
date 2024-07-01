@@ -186,7 +186,48 @@ export const CreateRenderer = (options: IRendererDom) => {
             }
         }
         else {
+            let s1 = i;
+            let s2 = i;
 
+            const keyToNewIndexMap = new Map<string, number>()
+
+            const toBePatched = e2 - s2 + 1;
+            let patched = 0
+
+            for (let i = s2; i <= e2; ++i) {
+                const nextChild = children[i]
+                keyToNewIndexMap.set(nextChild.key, i)
+            }
+
+            for (let i = s1; i <= e1; ++i) {
+                const preChild = prevChildren[i]
+                if (patched < toBePatched) {
+                    let newIndex = -1
+                    if (preChild.key) {
+                        newIndex = keyToNewIndexMap.get(preChild.key) || -1
+                    }
+                    else {
+                        for (let j = s2; j <= e2; ++j) {
+                            if (IsSomeVNode(preChild, children[j])) {
+                                newIndex = j
+                                patched++
+                                break
+                            }
+                        }
+                    }
+
+                    if (newIndex === -1) {
+                        HostRemove(preChild.el)
+                    }
+                    else {
+                        Patch(preChild, children[newIndex], container, parentComponent, undefined)
+                        patched++
+                    }
+                }
+                else {
+                    HostRemove(preChild.el)
+                }
+            }
         }
     }
 
