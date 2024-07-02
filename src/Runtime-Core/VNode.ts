@@ -1,5 +1,5 @@
 import { ShapeFlag } from "../Shared/ShapeFlag"
-import { IComponent } from "./Component"
+import { IComponent, IComponentInstance } from "./Component"
 
 export enum SpecialTag {
     Text = 'Text',
@@ -12,6 +12,7 @@ export interface IVNode {
     props: Record<string, unknown>,
     shapeFlag: ShapeFlag,
     key: string,
+    instance: IComponentInstance,
     children?: Children
 }
 

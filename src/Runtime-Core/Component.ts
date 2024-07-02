@@ -19,7 +19,9 @@ export interface IComponentInstance {
     isMounted: boolean,
     provides: TObject,
     parent?: IComponentInstance,
-    subTree: IVNode
+    subTree: IVNode,
+    next?: IVNode,
+    Update: () => unknown,
     Render: (...args: Array<unknown>) => IVNode,
     Emit: (event: string, ...args: Array<unknown>) => unknown
 }
@@ -47,7 +49,7 @@ export const SetupStatefulComponent = (instance: IComponentInstance) => {
     const setupResult = component.Setup
         ? component.Setup(ShallowReadonly(instance.vNode.props), {
             Emit: instance.Emit
-        })
+        }) || {}
         : {}
     SetCurrentInstance(null)
     HandleSetupResult(instance, setupResult)

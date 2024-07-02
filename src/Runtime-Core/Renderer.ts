@@ -2,6 +2,7 @@ import { Effect } from "../Reactivity/Effect";
 import { GetSequence } from "../Shared/index";
 import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
+import { ShouldUpdateComponent } from "./ComponentUpdateUtils";
 import { CreateAppApi } from "./CreateApp";
 import { Children, IVNode, SpecialTag } from "./VNode";
 
@@ -275,17 +276,35 @@ export const CreateRenderer = (options: IRendererDom) => {
     }
 
     const ProcessComponent = (prevVNode: IVNode | null, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
-        MountComponent(vNode, container, parentComponent, anchor)
+        if (prevVNode) {
+            UpdateComponent(prevVNode, vNode, container, parentComponent, anchor)
+        }
+        else {
+            MountComponent(vNode, container, parentComponent, anchor)
+        }
+    }
+
+    const UpdateComponent = (prevVNode: IVNode, vNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
+        const instance = vNode.instance = prevVNode.instance
+        if (ShouldUpdateComponent(prevVNode, vNode)) {
+            instance.next = vNode
+            instance.Update()
+        }
+        else {
+            vNode.el = prevVNode.el
+            instance.vNode = vNode
+        }
+
     }
 
     const MountComponent = (initinalVNode: IVNode, container: HTMLElement, parentComponent?: IComponentInstance, anchor?: HTMLElement | Text) => {
-        const instance = CreateComponentInstance(initinalVNode, parentComponent)
+        const instance = initinalVNode.instance = CreateComponentInstance(initinalVNode, parentComponent)
         SetupComponent(instance)
         SetupRenderEffect(instance, container, anchor)
     }
 
     const SetupRenderEffect = (instance: IComponentInstance, container: HTMLElement, anchor?: HTMLElement | Text) => {
-        Effect(() => {
+        instance.Update = Effect(() => {
             if (!instance.isMounted) {
                 const { proxy } = instance
                 const subTree = instance.subTree = instance.Render.call(proxy)
@@ -294,13 +313,23 @@ export const CreateRenderer = (options: IRendererDom) => {
                 instance.isMounted = true
             }
             else {
-                const { proxy } = instance
+                const { next, vNode, proxy } = instance
+                if (next) {
+                    next.el = vNode.el
+                    UpdateComponentPreRender(instance, next)
+                }
                 const subTree = instance.Render.call(proxy)
                 const prevSubTree = instance.subTree
                 instance.subTree = subTree
                 Patch(prevSubTree, subTree, container, instance, anchor)
             }
         })
+    }
+
+
+    const UpdateComponentPreRender = (instance: IComponentInstance, nextVNode: IVNode) => {
+        instance.vNode = nextVNode
+        instance.next = undefined
     }
 
     return {
