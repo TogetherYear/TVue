@@ -216,7 +216,6 @@ export const CreateRenderer = (options: IRendererDom) => {
                         for (let j = s2; j <= e2; ++j) {
                             if (IsSomeVNode(preChild, children[j])) {
                                 newIndex = j
-                                patched++
                                 break
                             }
                         }
