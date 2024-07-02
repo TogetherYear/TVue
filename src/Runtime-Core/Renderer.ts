@@ -213,7 +213,7 @@ export const CreateRenderer = (options: IRendererDom) => {
                         newIndex = keyToNewIndexMap.get(preChild.key) || -1
                     }
                     else {
-                        for (let j = s2; j <= e2; ++j) {
+                        for (let j = s2; j < e2; ++j) {
                             if (IsSomeVNode(preChild, children[j])) {
                                 newIndex = j
                                 break

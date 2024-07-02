@@ -16,6 +16,9 @@ export const HasKey = (obj: TObject, p: string) => {
     return Object.prototype.hasOwnProperty.call(obj, p)
 }
 
+/**
+ * 获取最长自增数组
+ */
 export const GetSequence = (arr: Array<number>) => {
     const p = arr.slice();
     const result = [0];

@@ -26,7 +26,7 @@ export const CreateVNode = (component: IComponent | string, props: Record<string
         component,
         props,
         children,
-        key: props.key,
+        key: props.key || '',
         shapeFlag: GetShapeFlag(component)
     }
     if (typeof children === 'string') {

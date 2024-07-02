@@ -99,26 +99,40 @@ import { H, Reactive, Ref } from '../../lib/TVue.esm.js'
 //    2. 删除老的  (在老的里面存在，新的里面不存在)
 //    3. 移动 (节点存在于新的和老的里面，但是位置变了)
 //         - 使用最长子序列来优化
+// const prevChildren = [
+//     H("p", { key: "A" }, "A"),
+//     H("p", { key: "B" }, "B"),
+//     H("p", { key: "C" }, "C"),
+//     H("p", { key: "D" }, "D"),
+//     H("p", { key: "E" }, "E"),
+//     H("p", { key: "Z" }, "Z"),
+//     H("p", { key: "F" }, "F"),
+//     H("p", { key: "G" }, "G"),
+// ];
+
+// const nextChildren = [
+//     H("p", { key: "A" }, "A"),
+//     H("p", { key: "B" }, "B"),
+//     H("p", { key: "D" }, "D"),
+//     H("p", { key: "C" }, "C"),
+//     H("p", { key: "Y" }, "Y"),
+//     H("p", { key: "E" }, "E"),
+//     H("p", { key: "F" }, "F"),
+//     H("p", { key: "G" }, "G"),
+// ];
+
 const prevChildren = [
     H("p", { key: "A" }, "A"),
+    H("p", {}, "C"),
     H("p", { key: "B" }, "B"),
-    H("p", { key: "C" }, "C"),
     H("p", { key: "D" }, "D"),
-    H("p", { key: "E" }, "E"),
-    H("p", { key: "Z" }, "Z"),
-    H("p", { key: "F" }, "F"),
-    H("p", { key: "G" }, "G"),
 ];
 
 const nextChildren = [
     H("p", { key: "A" }, "A"),
     H("p", { key: "B" }, "B"),
+    H("p", {}, "C"),
     H("p", { key: "D" }, "D"),
-    H("p", { key: "C" }, "C"),
-    H("p", { key: "Y" }, "Y"),
-    H("p", { key: "E" }, "E"),
-    H("p", { key: "F" }, "F"),
-    H("p", { key: "G" }, "G"),
 ];
 
 export const ArrayToArray = {
