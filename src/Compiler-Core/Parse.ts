@@ -38,7 +38,7 @@ const ParseChildren = (context: IContext) => {
     return nodes
 }
 
-const ParseInterpolation = (context: IContext) => {
+const ParseInterpolation = (context: IContext): IInterpolation => {
     const closeIndex = context.source.indexOf(Symbol.CloaseDelimiter, Symbol.OpenDelimiter.length)
     const content = context.source.slice(Symbol.OpenDelimiter.length, closeIndex)
     context.source = context.source.slice(closeIndex + Symbol.CloaseDelimiter.length)
@@ -47,7 +47,7 @@ const ParseInterpolation = (context: IContext) => {
         content: {
             type: NodeType.SimpleExpression,
             content: content,
-        },
+        }
     }
 }
 
