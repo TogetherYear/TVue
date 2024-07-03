@@ -4,6 +4,7 @@ import { ShapeFlag } from "../Shared/ShapeFlag";
 import { CreateComponentInstance, IComponentInstance, SetupComponent } from "./Component";
 import { ShouldUpdateComponent } from "./ComponentUpdateUtils";
 import { CreateAppApi } from "./CreateApp";
+import { QueueJobs } from "./Scheduler";
 import { Children, IVNode, SpecialTag } from "./VNode";
 
 export interface IRendererDom {
@@ -322,6 +323,11 @@ export const CreateRenderer = (options: IRendererDom) => {
                 const prevSubTree = instance.subTree
                 instance.subTree = subTree
                 Patch(prevSubTree, subTree, container, instance, anchor)
+            }
+        }, {
+            scheduler: () => {
+                console.log("scheduler")
+                QueueJobs(instance.Update)
             }
         })
     }
