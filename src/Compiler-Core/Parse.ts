@@ -7,15 +7,21 @@ interface IContext {
 
 interface IInterpolation {
     type: NodeType,
-    content: {
-        type: NodeType,
-        content: string
+    tag?: string,
+    content?: {
+        type?: NodeType,
+        content?: string
     }
 }
 
 const enum Symbol {
     OpenDelimiter = '{{',
     CloaseDelimiter = '}}',
+}
+
+const enum TagType {
+    Start,
+    End,
 }
 
 export const BaseParse = (content: string) => {
@@ -31,9 +37,17 @@ const CreateRoot = (children: Array<IInterpolation>) => {
 
 const ParseChildren = (context: IContext) => {
     const nodes = []
-    if (context.source.startsWith(Symbol.OpenDelimiter)) {
-        const node = ParseInterpolation(context)
+    const s = context.source
+    let node;
+    if (s.startsWith(Symbol.OpenDelimiter)) {
+        node = ParseInterpolation(context)
         nodes.push(node)
+    }
+    else if (s.startsWith('<')) {
+        if (/[a-z]/i.test(s[1])) {
+            node = ParseElement(context)
+            nodes.push(node)
+        }
     }
     return nodes
 }
@@ -51,10 +65,33 @@ const ParseInterpolation = (context: IContext): IInterpolation => {
     }
 }
 
+const ParseElement = (context: IContext): IInterpolation => {
+    const element = ParseTag(context, TagType.Start) as IInterpolation
+    ParseTag(context, TagType.End)
+    return element
+}
+
+const ParseTag = (context: IContext, type: TagType) => {
+    const match = /^<\/?([a-z]*)/i.exec(context.source) as RegExpExecArray
+    const tag = match[1]
+    AdvanceBy(context, match[0].length)
+    AdvanceBy(context, 1)
+    if (type === TagType.Start) {
+        return {
+            type: NodeType.Element,
+            tag,
+        }
+    }
+}
+
 const CreateParseContext = (content: string) => {
     const context = {
         rawSource: content,
         source: content.replace(/[\n\t\s]+/g, '')
     } as IContext
     return context
+}
+
+const AdvanceBy = (context: IContext, length: number) => {
+    context.source = context.source.slice(length)
 }
