@@ -4,8 +4,7 @@ import { BaseParse } from "../Parse";
 describe("Parse", () => {
     describe("interpolation", () => {
         test("simple", () => {
-            const str = `{{ message }}asdwadsadasa
-            sdasda   sAAAAA`
+            const str = `{{ message }}asdwadsadasasdasdasAAAAA`
             const ast = BaseParse(str)
             expect(ast.children[0]).toStrictEqual({
                 type: NodeType.Interpolation,
@@ -23,6 +22,16 @@ describe("Parse", () => {
             expect(ast.children[0]).toStrictEqual({
                 type: NodeType.Element,
                 tag: 'div',
+            });
+        })
+    })
+    describe('text', () => {
+        test('simple text', () => {
+            const str = `some text`
+            const ast = BaseParse(str)
+            expect(ast.children[0]).toStrictEqual({
+                type: NodeType.Text,
+                content: 'some text'
             });
         })
     })
