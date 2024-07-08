@@ -4,9 +4,8 @@ interface IContext {
     rawSource: string,
     source: string
 }
-
-interface INode {
-    type: NodeType,
+export interface INode {
+    type?: NodeType,
     tag?: string,
     content?: {
         type?: NodeType,
@@ -33,7 +32,7 @@ export const BaseParse = (content: string) => {
     return CreateRoot(ParseChildren(context, []))
 }
 
-const CreateRoot = (children: Array<INode>) => {
+const CreateRoot = (children: Array<INode>): INode => {
     return {
         children
     }
