@@ -1,4 +1,3 @@
-import { NodeType } from "./AST";
 import { INode } from "./Parse";
 
 export interface ITransformOptions {
@@ -13,6 +12,11 @@ interface ITransformContext {
 export const Transform = (root: INode, options?: ITransformOptions) => {
     const context = CreateTransformContext(root, options)
     TraverseNode(root, context)
+    CreateRootCodegen(root)
+}
+
+const CreateRootCodegen = (root: INode) => {
+    root.codegenNode = root.children?.[0]
 }
 
 const CreateTransformContext = (root: INode, options?: ITransformOptions) => {

@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`codegen string 1`] = `
+{
+  "code": "return function Render(_ctx,_cache) {
+return 'TVue'
+}",
+}
+`;

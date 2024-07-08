@@ -12,6 +12,7 @@ export interface INode {
         content?: string
     } | string,
     children?: Array<INode>
+    codegenNode?: INode
 }
 
 const enum Symbol {
