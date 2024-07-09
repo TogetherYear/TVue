@@ -1,4 +1,6 @@
+import { NodeType } from "./AST";
 import { INode } from "./Parse";
+import { RuntimeHelper } from "./RuntimeHelper";
 
 export interface ITransformOptions {
     nodeTransforms: Array<(node: INode) => void>
@@ -7,12 +9,15 @@ export interface ITransformOptions {
 interface ITransformContext {
     root: INode,
     nodeTransforms: Array<(node: INode) => void>
+    helper: Map<string, number>,
+    Helper: (key: string) => void
 }
 
 export const Transform = (root: INode, options?: ITransformOptions) => {
     const context = CreateTransformContext(root, options)
     TraverseNode(root, context)
     CreateRootCodegen(root)
+    root.helpers = [...context.helper.keys()]
 }
 
 const CreateRootCodegen = (root: INode) => {
@@ -22,6 +27,10 @@ const CreateRootCodegen = (root: INode) => {
 const CreateTransformContext = (root: INode, options?: ITransformOptions) => {
     const context = {
         root,
+        helper: new Map(),
+        Helper: (key: string) => {
+            context.helper.set(key, 1)
+        },
         nodeTransforms: options?.nodeTransforms || []
     } as ITransformContext
     return context
@@ -34,15 +43,25 @@ const TraverseNode = (node: INode, context: ITransformContext) => {
         Tf(node)
     }
 
-    TransformChildren(node, context)
+    switch (node.type) {
+        case NodeType.Interpolation:
+            context.Helper(RuntimeHelper.ToDisplayString)
+            break;
+        case NodeType.Root:
+        case NodeType.Element:
+            TransformChildren(node, context)
+            break;
+        default:
+            break;
+    }
+
+
 }
 
 const TransformChildren = (node: INode, context: ITransformContext) => {
-    const children = node.children
-    if (children) {
-        for (let i = 0; i < children.length; ++i) {
-            const node = children[i]
-            TraverseNode(node, context)
-        }
+    const children = node.children!
+    for (let i = 0; i < children.length; ++i) {
+        const node = children[i]
+        TraverseNode(node, context)
     }
 }

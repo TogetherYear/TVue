@@ -7,15 +7,18 @@ interface IContext {
 export interface INode {
     type?: NodeType,
     tag?: string,
-    content?: {
-        type?: NodeType,
-        content?: string
-    } | string,
+    content?: INodeContent | string,
     children?: Array<INode>
-    codegenNode?: INode
+    codegenNode?: INode,
+    helpers?: Array<string>
 }
 
-const enum Symbol {
+export interface INodeContent {
+    type: NodeType,
+    content: string
+}
+
+const enum SpecialSymbol {
     OpenDelimiter = '{{',
     CloaseDelimiter = '}}',
     LeftAngleBracket = '<'
@@ -26,7 +29,7 @@ const enum TagType {
     End,
 }
 
-const endTokens = [Symbol.OpenDelimiter, Symbol.LeftAngleBracket]
+const endTokens = [SpecialSymbol.OpenDelimiter, SpecialSymbol.LeftAngleBracket]
 
 export const BaseParse = (content: string) => {
     const context = CreateParseContext(content)
@@ -35,7 +38,8 @@ export const BaseParse = (content: string) => {
 
 const CreateRoot = (children: Array<INode>): INode => {
     return {
-        children
+        children,
+        type: NodeType.Root
     }
 }
 
@@ -44,7 +48,7 @@ const ParseChildren = (context: IContext, ancestors: Array<INode>) => {
     while (!IsEnd(context, ancestors)) {
         let node;
         const s = context.source
-        if (s.startsWith(Symbol.OpenDelimiter)) {
+        if (s.startsWith(SpecialSymbol.OpenDelimiter)) {
             node = ParseInterpolation(context)
         }
         else if (s.startsWith('<')) {
@@ -74,11 +78,11 @@ const IsEnd = (context: IContext, ancestors: Array<INode>) => {
 }
 
 const ParseInterpolation = (context: IContext): INode => {
-    const closeIndex = context.source.indexOf(Symbol.CloaseDelimiter, Symbol.OpenDelimiter.length)
-    AdvanceBy(context, Symbol.OpenDelimiter.length)
-    const rawContent = ParseTextData(context, closeIndex - Symbol.OpenDelimiter.length)
+    const closeIndex = context.source.indexOf(SpecialSymbol.CloaseDelimiter, SpecialSymbol.OpenDelimiter.length)
+    AdvanceBy(context, SpecialSymbol.OpenDelimiter.length)
+    const rawContent = ParseTextData(context, closeIndex - SpecialSymbol.OpenDelimiter.length)
     const content = rawContent.trim()
-    AdvanceBy(context, Symbol.CloaseDelimiter.length)
+    AdvanceBy(context, SpecialSymbol.CloaseDelimiter.length)
     return {
         type: NodeType.Interpolation,
         content: {
