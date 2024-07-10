@@ -1,9 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`codegen element 1`] = `
+"const { ToDisplayString:_ToDisplayString } = TVue
+return function Render(_ctx,_cache) {return _CreateElementVNode('div')}"
+`;
+
 exports[`codegen interpolation 1`] = `
 {
   "code": "const { ToDisplayString:_ToDisplayString } = TVue
-return function Render(_ctx,_cache) {return _ToDisplayString(_ctx.message)}",
+return function Render(_ctx,_cache) {return _ToDisplayString(_ctx.message_CreateElementVNode('div'))}",
 }
 `;
 

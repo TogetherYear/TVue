@@ -6,7 +6,7 @@ export interface ITransformOptions {
     nodeTransforms: Array<(node: INode) => void>
 }
 
-interface ITransformContext {
+export interface ITransformContext {
     root: INode,
     nodeTransforms: Array<(node: INode) => void>
     helper: Map<string, number>,

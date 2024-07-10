@@ -1,3 +1,4 @@
 export const enum RuntimeHelper {
-    ToDisplayString = 'ToDisplayString'
+    ToDisplayString = 'ToDisplayString',
+    CreateElementVNode = 'CreateElementVNode',
 }

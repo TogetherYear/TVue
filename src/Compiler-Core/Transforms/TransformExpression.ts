@@ -1,5 +1,5 @@
-import { NodeType } from "./AST";
-import { INode, INodeContent } from "./Parse";
+import { NodeType } from "../AST";
+import { INode, INodeContent } from "../Parse";
 
 export const TransformExpression = (node: INode) => {
     if (node.type === NodeType.Interpolation) {

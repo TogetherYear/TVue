@@ -57,6 +57,8 @@ const GenNode = (node: INode | INodeContent, context: ICodegenContext) => {
             break;
         case NodeType.SimpleExpression:
             GenExpression(node, context)
+        case NodeType.Element:
+            GenElement(node, context)
     }
 }
 
@@ -75,4 +77,9 @@ const GenInterpolation = (node: INode, context: ICodegenContext) => {
 const GenExpression = (node: INode, context: ICodegenContext) => {
     const { Push } = context
     Push(`${node.content}`)
+}
+
+const GenElement = (node: INode, context: ICodegenContext) => {
+    const { Push } = context
+    Push(`_${RuntimeHelper.CreateElementVNode}('div')`)
 }
